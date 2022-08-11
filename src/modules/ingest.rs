@@ -1,13 +1,8 @@
-use std::{
-    fs,
-    io::{self, Read},
-};
-
 use jmap_client::client::Client;
 use reqwest::header::CONTENT_TYPE;
 use serde::Deserialize;
 
-use super::cli::IngestCommand;
+use super::{cli::IngestCommand, read_file, UnwrapResult};
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct Dsn {
@@ -36,21 +31,7 @@ enum IngestResult {
 }
 
 pub fn cmd_ingest(client: Client, command: IngestCommand, url: &str) {
-    let raw_message = if command.path == "-" {
-        let mut stdin = io::stdin().lock();
-        let mut raw_message = Vec::with_capacity(1024);
-        let mut buf = [0; 1024];
-        loop {
-            let n = stdin.read(&mut buf).unwrap();
-            if n == 0 {
-                break;
-            }
-            raw_message.extend_from_slice(&buf[..n]);
-        }
-        raw_message
-    } else {
-        fs::read(command.path).expect("Failed to read message file.")
-    };
+    let raw_message = read_file(&command.path);
     let url = if let Some(from) = command.from {
         format!(
             "{}/ingest?from={},to={}",
@@ -71,11 +52,11 @@ pub fn cmd_ingest(client: Client, command: IngestCommand, url: &str) {
             .header(CONTENT_TYPE, "message/rfc822")
             .body(raw_message)
             .send()
-            .expect("Ingest failed.")
+            .unwrap_result("send request to JMAP server")
             .bytes()
-            .expect("Ingest failed while getting bytes."),
+            .unwrap_result("obtain response from JMAP server"),
     )
-    .expect("Failed to parse JSON response.");
+    .unwrap_result("parse JSON response");
 
     match result {
         IngestResult::Dsn(dsns) => {

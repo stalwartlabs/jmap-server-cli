@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -35,6 +35,10 @@ pub enum Commands {
 
     /// Ingest an e-mail message
     Ingest(IngestCommand),
+
+    /// Import accounts and domains
+    #[clap(subcommand)]
+    Import(ImportCommands),
 }
 
 #[derive(Subcommand)]
@@ -288,4 +292,56 @@ pub struct IngestCommand {
     /// Deliver the message to the specified recipients
     #[clap(required = true)]
     pub recipients: Vec<String>,
+}
+
+#[derive(Subcommand)]
+pub enum ImportCommands {
+    /// Bulk import user accounts
+    Accounts {
+        #[clap(short, long)]
+        /// CSV file delimiter, defaults to ','
+        delimiter: Option<String>,
+
+        /// CSV has headers
+        #[clap(short, long)]
+        with_headers: bool,
+
+        /// CSV column layout, default is 'email,secret,name,description,quota,timezone'
+        #[clap(short, long)]
+        column_layout: Option<String>,
+
+        /// Do not create domain names
+        #[clap(short, long)]
+        no_domains: bool,
+
+        /// Path to the CSV file, or '-' for stdin
+        path: String,
+    },
+
+    /// Import messages and folders
+    Messages {
+        #[clap(arg_enum)]
+        #[clap(short, long)]
+        format: MailboxFormat,
+
+        /// Number of threads to use for message import, defaults to the number of CPUs.
+        #[clap(short, long)]
+        num_threads: Option<usize>,
+
+        /// Account email to import messages into
+        email: String,
+
+        /// Path to the mailbox to import, or '-' for stdin (stdin only supported for mbox)
+        path: String,
+    },
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum MailboxFormat {
+    /// Mbox format
+    Mbox,
+    /// Maildir and Maildir++ formats
+    Maildir,
+    /// Maildir with hierarchical folders (i.e. Dovecot)
+    MaildirNested,
 }

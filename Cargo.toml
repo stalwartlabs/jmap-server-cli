@@ -8,9 +8,15 @@ resolver = "2"
 
 [dependencies]
 jmap-client = { path = "/home/vagrant/code/jmap-client", default-features = false, features = ["blocking"] } 
+mail-parser = { path = "/home/vagrant/code/mail-parser", default-features = false } 
 reqwest = { git = "https://github.com/stalwartlabs/reqwest.git", default-features = false, features = ["blocking", "rustls-tls"]}
+rayon = "1.5.1"
+num_cpus = "1.13.1"
 clap = { version = "3.2.16", features = ["derive"] }
 prettytable-rs = "0.8"
+indicatif = "0.17.0"
+console = { version = "0.15", default-features = false, features = ["ansi-parsing"] }
 rpassword = "7.0"
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
+csv = "1.1"

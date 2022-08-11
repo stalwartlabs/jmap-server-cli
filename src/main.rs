@@ -5,6 +5,7 @@ use modules::{
     cli::{Cli, Commands},
     domain::cmd_domain,
     group::cmd_group,
+    import::cmd_import,
     ingest::cmd_ingest,
     list::cmd_list,
 };
@@ -45,5 +46,6 @@ fn main() {
         Commands::List(command) => cmd_list(client, command),
         Commands::Group(command) => cmd_group(client, command),
         Commands::Ingest(command) => cmd_ingest(client, command, &args.url),
+        Commands::Import(command) => cmd_import(client, command),
     }
 }

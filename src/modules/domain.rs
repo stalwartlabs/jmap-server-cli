@@ -30,7 +30,7 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
             }
             if let Some(dkim_cert) = dkim_cert {
                 create_request.secret(
-                    fs::read_to_string(dkim_cert).expect("Failed to read DKIM certificate file."),
+                    fs::read_to_string(dkim_cert).unwrap_result("read DKIM certificate file."),
                 );
             }
             if dkim_selector.is_some() || dkim_expiration.is_some() {
@@ -59,7 +59,7 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
             }
             if let Some(dkim_cert) = dkim_cert {
                 update_request.secret(
-                    fs::read_to_string(dkim_cert).expect("Failed to read DKIM certificate file."),
+                    fs::read_to_string(dkim_cert).unwrap_result("read DKIM certificate file."),
                 );
             }
             if dkim_selector.is_some() || dkim_expiration.is_some() {
