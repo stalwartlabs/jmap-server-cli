@@ -242,7 +242,10 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
                 }
             }
 
-            println!("\nSuccessfully imported {} accounts.", total_created);
+            println!(
+                "\nSuccessfully imported {} accounts.",
+                style(total_created).bold()
+            );
         }
 
         ImportCommands::Messages {

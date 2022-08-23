@@ -1,4 +1,4 @@
-use std::{fmt::Display, io::Read};
+use std::{collections::HashMap, fmt::Display, io::Read};
 
 use jmap_client::principal::Property;
 
@@ -8,10 +8,9 @@ pub mod common;
 pub mod domain;
 pub mod group;
 pub mod import;
-pub mod ingest;
 pub mod list;
 
-trait UnwrapResult<T> {
+pub trait UnwrapResult<T> {
     fn unwrap_result(self, action: &str) -> T;
 }
 
@@ -82,5 +81,49 @@ pub fn read_file(path: &str) -> Vec<u8> {
             println!("Failed to read file: {}", path);
             std::process::exit(1);
         })
+    }
+}
+
+pub fn get(url: &str) -> HashMap<String, serde_json::Value> {
+    serde_json::from_slice(
+        &reqwest::blocking::Client::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap_or_default()
+            .get(url)
+            .send()
+            .unwrap_result("send OAuth GET request")
+            .bytes()
+            .unwrap_result("fetch bytes"),
+    )
+    .unwrap_result("deserialize OAuth GET response")
+}
+
+pub fn post(url: &str, params: &HashMap<String, String>) -> HashMap<String, serde_json::Value> {
+    serde_json::from_slice(
+        &reqwest::blocking::Client::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap_or_default()
+            .post(url)
+            .form(params)
+            .send()
+            .unwrap_result("send OAuth POST request")
+            .bytes()
+            .unwrap_result("fetch bytes"),
+    )
+    .unwrap_result("deserialize OAuth POST response")
+}
+
+pub trait OAuthResponse {
+    fn property(&self, name: &str) -> &str;
+}
+
+impl OAuthResponse for HashMap<String, serde_json::Value> {
+    fn property(&self, name: &str) -> &str {
+        self.get(name)
+            .unwrap_result(&format!("find '{}' in OAuth response", name))
+            .as_str()
+            .unwrap_result(&format!("invalid '{}' value", name))
     }
 }

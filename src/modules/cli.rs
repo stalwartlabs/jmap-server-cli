@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -32,9 +32,6 @@ pub enum Commands {
     /// Manage groups
     #[clap(subcommand)]
     Group(GroupCommands),
-
-    /// Ingest an e-mail message
-    Ingest(IngestCommand),
 
     /// Import accounts and domains
     #[clap(subcommand)]
@@ -278,20 +275,6 @@ pub enum GroupCommands {
 
     /// List all groups
     List { filter: Option<String> },
-}
-
-#[derive(Args)]
-pub struct IngestCommand {
-    /// Path to the message file, or '-' for stdin
-    pub path: String,
-
-    #[clap(short, long)]
-    /// SMTP MAIL FROM address
-    pub from: Option<String>,
-
-    /// Deliver the message to the specified recipients
-    #[clap(required = true)]
-    pub recipients: Vec<String>,
 }
 
 #[derive(Subcommand)]
