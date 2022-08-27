@@ -18,9 +18,9 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
         DomainCommands::Create {
             name,
             description,
-            dkim_cert,
-            dkim_selector,
-            dkim_expiration,
+            cert_dkim,
+            selector_dkim,
+            expiration_dkim,
         } => {
             let mut request = client.build();
             let create_request = request.set_principal().create();
@@ -28,13 +28,13 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
             if description.is_some() {
                 create_request.description(description);
             }
-            if let Some(dkim_cert) = dkim_cert {
+            if let Some(cert_dkim) = cert_dkim {
                 create_request.secret(
-                    fs::read_to_string(dkim_cert).unwrap_result("read DKIM certificate file."),
+                    fs::read_to_string(cert_dkim).unwrap_result("read DKIM certificate file."),
                 );
             }
-            if dkim_selector.is_some() || dkim_expiration.is_some() {
-                create_request.dkim(DKIM::new(dkim_selector, dkim_expiration.map(|s| s as i64)));
+            if selector_dkim.is_some() || expiration_dkim.is_some() {
+                create_request.dkim(DKIM::new(selector_dkim, expiration_dkim.map(|s| s as i64)));
             }
             let create_id = create_request.create_id().unwrap();
             request
@@ -47,9 +47,9 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
         DomainCommands::Update {
             name,
             description,
-            dkim_cert,
-            dkim_selector,
-            dkim_expiration,
+            cert_dkim,
+            selector_dkim,
+            expiration_dkim,
         } => {
             let update_id = domain_to_id(&client, &name);
             let mut request = client.build();
@@ -57,13 +57,13 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
             if description.is_some() {
                 update_request.description(description);
             }
-            if let Some(dkim_cert) = dkim_cert {
+            if let Some(cert_dkim) = cert_dkim {
                 update_request.secret(
-                    fs::read_to_string(dkim_cert).unwrap_result("read DKIM certificate file."),
+                    fs::read_to_string(cert_dkim).unwrap_result("read DKIM certificate file."),
                 );
             }
-            if dkim_selector.is_some() || dkim_expiration.is_some() {
-                update_request.dkim(DKIM::new(dkim_selector, dkim_expiration.map(|s| s as i64)));
+            if selector_dkim.is_some() || expiration_dkim.is_some() {
+                update_request.dkim(DKIM::new(selector_dkim, expiration_dkim.map(|s| s as i64)));
             }
             request
                 .send_set_principal()

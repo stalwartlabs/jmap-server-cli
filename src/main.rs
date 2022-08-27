@@ -24,13 +24,16 @@ pub mod modules;
 fn main() {
     let args = Cli::parse();
     let credentials = if let Some(credentials) = args.credentials {
-        if let Some((account, secret)) = credentials.split_once(':') {
-            Credentials::basic(account, secret)
-        } else {
-            Credentials::basic("admin", credentials.as_str())
-        }
+        parse_credentials(&credentials)
     } else {
-        oauth(&args.url)
+        let credentials =
+            rpassword::prompt_password("\nEnter admin credentials or press [ENTER] to use OAuth: ")
+                .unwrap();
+        if !credentials.is_empty() {
+            parse_credentials(&credentials)
+        } else {
+            oauth(&args.url)
+        }
     };
 
     let client = Client::new()
@@ -47,6 +50,14 @@ fn main() {
         Commands::List(command) => cmd_list(client, command),
         Commands::Group(command) => cmd_group(client, command),
         Commands::Import(command) => cmd_import(client, command),
+    }
+}
+
+fn parse_credentials(credentials: &str) -> Credentials {
+    if let Some((account, secret)) = credentials.split_once(':') {
+        Credentials::basic(account, secret)
+    } else {
+        Credentials::basic("admin", credentials)
     }
 }
 

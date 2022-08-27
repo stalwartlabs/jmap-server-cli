@@ -128,13 +128,13 @@ pub enum DomainCommands {
         description: Option<String>,
         /// Path to DKIM private key.
         #[clap(short, long)]
-        dkim_cert: Option<PathBuf>,
+        cert_dkim: Option<PathBuf>,
         /// DKIM selector
         #[clap(short, long)]
-        dkim_selector: Option<String>,
+        selector_dkim: Option<String>,
         /// DKIM expiration (in seconds)
         #[clap(short, long)]
-        dkim_expiration: Option<u64>,
+        expiration_dkim: Option<u64>,
     },
 
     /// Update an existing domain
@@ -146,13 +146,13 @@ pub enum DomainCommands {
         description: Option<String>,
         /// Path to DKIM private key.
         #[clap(short, long)]
-        dkim_cert: Option<PathBuf>,
+        cert_dkim: Option<PathBuf>,
         /// DKIM selector
         #[clap(short, long)]
-        dkim_selector: Option<String>,
+        selector_dkim: Option<String>,
         /// DKIM expiration (in seconds)
         #[clap(short, long)]
-        dkim_expiration: Option<u64>,
+        expiration_dkim: Option<u64>,
     },
 
     /// Delete an existing domain
