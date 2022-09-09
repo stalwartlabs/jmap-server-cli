@@ -1,13 +1,17 @@
 [package]
 name = "stalwart-cli"
 description = "Stalwart JMAP Server CLI"
-authors = ["Stalwart Labs <hello@stalw.art>"]
+authors = ["Stalwart Labs Ltd. <hello@stalw.art>"]
+license = "AGPL-3.0-only"
+repository = "https://github.com/stalwartlabs/jmap-server-cli"
+homepage = "https://github.com/stalwartlabs/jmap-server-cli"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
 resolver = "2"
 
 [dependencies]
-jmap-client = { git = "https://github.com/stalwartlabs/jmap-client", default-features = false, features = ["blocking"] } 
+jmap-client = { git = "https://github.com/stalwartlabs/jmap-client", default-features = false, features = ["blocking", "follow-trusted"] } 
 mail-parser = { git = "https://github.com/stalwartlabs/mail-parser" } 
 reqwest = { git = "https://github.com/stalwartlabs/reqwest.git", default-features = false, features = ["blocking", "rustls-tls"]}
 rayon = "1.5.1"
