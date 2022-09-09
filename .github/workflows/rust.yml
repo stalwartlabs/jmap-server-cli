@@ -37,11 +37,6 @@ jobs:
     strategy:
       matrix:
         build: [stable]
-        include:
-          - build: beta
-            rust: beta
-          - build: nightly
-            rust: nightly
 
     steps:
       - name: Checkout
