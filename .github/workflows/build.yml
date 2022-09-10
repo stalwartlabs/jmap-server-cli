@@ -1,0 +1,134 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*.*.*'      
+
+jobs:
+  build:
+    name: Building for ${{ matrix.target }} on ${{ matrix.host_os }}
+    runs-on: ${{ matrix.host_os }}
+    strategy: 
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          #- aarch64-pc-windows-msvc
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - arm-unknown-linux-musleabihf
+          - arm-unknown-linux-gnueabihf
+          - armv7-unknown-linux-musleabihf
+          - armv7-unknown-linux-gnueabihf
+          - x86_64-pc-windows-msvc
+          - x86_64-apple-darwin
+          - x86_64-unknown-linux-musl
+          - x86_64-unknown-linux-gnu
+
+        include:
+          - target: aarch64-apple-darwin
+            host_os: macos-latest
+          #- target: aarch64-pc-windows-msvc
+          #  host_os: windows-2019
+          - target: aarch64-unknown-linux-gnu
+            host_os: ubuntu-18.04
+          - target: aarch64-unknown-linux-musl
+            host_os: ubuntu-18.04
+          - target: arm-unknown-linux-musleabihf
+            host_os: ubuntu-18.04
+          - target: arm-unknown-linux-gnueabihf
+            host_os: ubuntu-18.04
+          - target: armv7-unknown-linux-musleabihf
+            host_os: ubuntu-18.04
+          - target: armv7-unknown-linux-gnueabihf
+            host_os: ubuntu-18.04
+          - target: x86_64-pc-windows-msvc
+            host_os: windows-2019
+          - target: x86_64-apple-darwin
+            host_os: macos-latest
+          - target: x86_64-unknown-linux-musl
+            host_os: ubuntu-18.04
+          - target: x86_64-unknown-linux-gnu
+            host_os: ubuntu-18.04
+
+    steps:
+      - if: ${{ contains(matrix.host_os, 'ubuntu') }}
+        run: sudo apt-get update -y
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Install Linux build tools
+        if: ${{ !contains(matrix.host_os, 'windows') }}
+        run: resources/ci/install-build-tools.sh --target=${{ matrix.target }}
+
+      - name: Install Windows build tools
+        if: ${{ contains(matrix.host_os, 'windows') }}
+        run: ./resources/ci/install-build-tools.ps1
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          target: ${{ matrix.target }}
+          toolchain: stable
+          
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.host_os }}-${{ matrix.target }}-cli          
+
+      - name: XCode Version
+        if: ${{ matrix.target == 'aarch64-apple-darwin' }}
+        run: |
+          sudo xcode-select -s /Applications/Xcode_12.4.app &&
+          sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
+          
+      - name: ARM64 Windows setup
+        if: ${{ matrix.target == 'aarch64-pc-windows-msvc' }}
+        run: |
+          echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\Llvm\x64\bin" >> $GITHUB_PATH
+          echo "RUSTFLAGS=-C target-feature=+crt-static" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Building binary (Linux)
+        if: ${{ !contains(matrix.host_os, 'windows') }}
+        run: |
+          resources/ci/cargo.sh build --target=${{ matrix.target }} --release
+          
+      - name: Building binary (Windows)
+        if: ${{ contains(matrix.host_os, 'windows') }}
+        run: |
+          cargo build --target=${{ matrix.target }} --release
+
+      - name: Package (tar.gz)
+        if: ${{ !contains(matrix.host_os, 'windows') }}
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release          
+          tar czvf ../../../stalwart-cli-${{ matrix.target }}.tar.gz stalwart-cli
+          cd -
+          
+      - name: Package (7z)
+        if: ${{ contains(matrix.host_os, 'windows') }}
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release          
+          7z a ../../../stalwart-cli-${{ matrix.target }}.zip stalwart-cli.exe
+          cd -
+          
+      - name: Publish Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        # TODO: if any of the build step fails, the release should be deleted.
+        with:
+            files: 'stalwart-cli*'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        

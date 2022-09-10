@@ -530,13 +530,13 @@ checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
 [[package]]
 name = "jmap-client"
 version = "0.1.0"
-source = "git+https://github.com/stalwartlabs/jmap-client#24c5e61cf3a4b9ec0d3e706dd84c66c77902f3a0"
+source = "git+https://github.com/stalwartlabs/jmap-client#7a6c3076f5b49208ff6b2b52c79db26bb6dd71e5"
 dependencies = [
  "ahash",
  "base64",
  "chrono",
  "parking_lot",
- "reqwest 0.11.11 (git+https://github.com/stalwartlabs/reqwest.git?rev=e0f7787)",
+ "reqwest",
  "serde",
  "serde_json",
 ]
@@ -820,44 +820,6 @@ checksum = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132"
 [[package]]
 name = "reqwest"
 version = "0.11.11"
-source = "git+https://github.com/stalwartlabs/reqwest.git?rev=e0f7787#e0f7787a2eb0cdf40a7d437021461397bcce0e73"
-dependencies = [
- "base64",
- "bytes",
- "encoding_rs",
- "futures-core",
- "futures-util",
- "h2",
- "http",
- "http-body",
- "hyper",
- "hyper-rustls",
- "ipnet",
- "js-sys",
- "log",
- "mime",
- "once_cell",
- "percent-encoding",
- "pin-project-lite",
- "rustls",
- "rustls-pemfile",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "tokio",
- "tokio-rustls",
- "tower-service",
- "url",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "webpki-roots",
- "winreg",
-]
-
-[[package]]
-name = "reqwest"
-version = "0.11.11"
 source = "git+https://github.com/stalwartlabs/reqwest.git#e0f7787a2eb0cdf40a7d437021461397bcce0e73"
 dependencies = [
  "base64",
@@ -1054,7 +1016,7 @@ dependencies = [
  "num_cpus",
  "prettytable-rs",
  "rayon",
- "reqwest 0.11.11 (git+https://github.com/stalwartlabs/reqwest.git)",
+ "reqwest",
  "rpassword",
  "serde",
  "serde_json",
