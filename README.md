@@ -1,9 +1,24 @@
 # Stalwart JMAP CLI
 
+[![Test](https://github.com/stalwartlabs/jmap-server-cli/actions/workflows/test.yml/badge.svg)](https://github.com/stalwartlabs/jmap-server-cli/actions/workflows/test.yml)
+[![Build](https://github.com/stalwartlabs/jmap-server-cli/actions/workflows/build.yml/badge.svg)](https://github.com/stalwartlabs/jmap-server-cli/actions/workflows/build.yml)
+
 The Stalwart JMAP Command Line Interface (CLI) is a command line utility that allows system 
 administrators to perform management tasks on a Stalwart JMAP server. 
 
-The default location of the Stalwart CLI is ``/usr/bin/stalwart-cli`` and when executed
+## Installation
+
+On **Linux**, **MacOS** and **Raspberry Pi** run the following in your terminal:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://jmap-cli.stalw.art/install.sh | sh
+```
+
+On **Windows** download the CLI tool from [here](https://github.com/stalwartlabs/jmap-server-cli/releases/latest/download/stalwart-cli-x86_64-pc-windows-msvc.zip).
+
+## Usage
+
+The default location of the Stalwart CLI is ``$HOME/.stalwart/stalwart-cli`` and when executed
 without any parameters it prints a brief help page such as this one:
 
 ```bash

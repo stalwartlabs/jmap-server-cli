@@ -5,9 +5,9 @@ on:
   pull_request:
   push:
     branches:
-      - master
-    tags:
-      - 'v*.*.*'      
+      - main
+    #tags:
+    #  - 'v*.*.*'      
 
 jobs:
   build:
@@ -15,45 +15,31 @@ jobs:
     runs-on: ${{ matrix.host_os }}
     strategy: 
       matrix:
-        target:
-          - aarch64-apple-darwin
-          #- aarch64-pc-windows-msvc
-          - aarch64-unknown-linux-gnu
-          - aarch64-unknown-linux-musl
-          - arm-unknown-linux-musleabihf
-          - arm-unknown-linux-gnueabihf
-          - armv7-unknown-linux-musleabihf
-          - armv7-unknown-linux-gnueabihf
-          - x86_64-pc-windows-msvc
-          - x86_64-apple-darwin
-          - x86_64-unknown-linux-musl
-          - x86_64-unknown-linux-gnu
-
         include:
           - target: aarch64-apple-darwin
             host_os: macos-latest
           #- target: aarch64-pc-windows-msvc
-          #  host_os: windows-2019
+          #  host_os: windows-2022
           - target: aarch64-unknown-linux-gnu
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: aarch64-unknown-linux-musl
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: arm-unknown-linux-musleabihf
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: arm-unknown-linux-gnueabihf
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: armv7-unknown-linux-musleabihf
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: armv7-unknown-linux-gnueabihf
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: x86_64-pc-windows-msvc
-            host_os: windows-2019
+            host_os: windows-2022
           - target: x86_64-apple-darwin
             host_os: macos-latest
           - target: x86_64-unknown-linux-musl
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
           - target: x86_64-unknown-linux-gnu
-            host_os: ubuntu-18.04
+            host_os: ubuntu-20.04
 
     steps:
       - if: ${{ contains(matrix.host_os, 'ubuntu') }}
@@ -64,13 +50,30 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Linux build tools
-        if: ${{ !contains(matrix.host_os, 'windows') }}
-        run: resources/ci/install-build-tools.sh --target=${{ matrix.target }}
+      - name: Install LLVM and Clang (Linux)
+        if: ${{ contains(matrix.host_os, 'ubuntu') }}
+        run: |
+          sudo apt-get update -y
+          sudo wget https://apt.llvm.org/llvm.sh
+          sudo chmod +x llvm.sh
+          sudo ./llvm.sh 14 all
 
-      - name: Install Windows build tools
-        if: ${{ contains(matrix.host_os, 'windows') }}
-        run: ./resources/ci/install-build-tools.ps1
+      - name: Install ARM64 Linux build tools
+        if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
+        run: |
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            libc6-dev-arm64-cross
+
+      - name: Install ARM7 Linux build tools
+        if: ${{ matrix.target == 'armv7-unknown-linux-gnueabihf' ||
+                matrix.target == 'arm-unknown-linux-gnueabihf' }}
+        run: |
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install \
+            gcc-arm-linux-gnueabihf \
+            g++-arm-linux-gnueabihf \
+            libc6-dev-armhf-cross
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -97,10 +100,50 @@ jobs:
           echo "RUSTFLAGS=-C target-feature=+crt-static" >> $GITHUB_ENV
         shell: bash
 
-      - name: Building binary (Linux)
+      - name: Building binary (Linux/MacOS)
         if: ${{ !contains(matrix.host_os, 'windows') }}
         run: |
-          resources/ci/cargo.sh build --target=${{ matrix.target }} --release
+          case "${{ matrix.target }}" in
+            aarch64-unknown-linux-gnu)
+              export CC_aarch64_unknown_linux_gnu=clang-14
+              export AR_aarch64_unknown_linux_gnu=llvm-ar-14
+              export CFLAGS_aarch64_unknown_linux_gnu="--sysroot=/usr/aarch64-linux-gnu"
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+              ;;
+            aarch64-unknown-linux-musl)
+              export CC_aarch64_unknown_linux_musl=clang-14
+              export AR_aarch64_unknown_linux_musl=llvm-ar-14
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-Clink-self-contained=yes -Clinker=rust-lld"
+              ;;
+            arm-unknown-linux-gnueabihf)
+              export CC_arm_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
+              export AR_arm_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc-ar
+              export CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+              ;;
+            arm-unknown-linux-musleabihf)
+              export CC_arm_unknown_linux_musleabihf=clang-14
+              export AR_arm_unknown_linux_musleabihf=llvm-ar-14
+              export CARGO_TARGET_ARM_UNKNOWN_LINUX_MUSLEABIHF_RUSTFLAGS="-Clink-self-contained=yes -Clinker=rust-lld"
+              ;;
+            armv7-unknown-linux-gnueabihf)
+              export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
+              export AR_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc-ar
+              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+              ;;    
+            armv7-unknown-linux-musleabihf)
+              export CC_armv7_unknown_linux_musleabihf=clang-14
+              export AR_armv7_unknown_linux_musleabihf=llvm-ar-14
+              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_MUSLEABIHF_RUSTFLAGS="-Clink-self-contained=yes -Clinker=rust-lld"
+              ;;
+            x86_64-unknown-linux-musl)
+              export CC_x86_64_unknown_linux_musl=clang-14
+              export AR_x86_64_unknown_linux_musl=llvm-ar-14
+              export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-Clink-self-contained=yes -Clinker=rust-lld"
+              ;;
+            *)
+              ;;
+          esac
+          cargo build --target=${{ matrix.target }} --release
           
       - name: Building binary (Windows)
         if: ${{ contains(matrix.host_os, 'windows') }}
@@ -126,7 +169,6 @@ jobs:
       - name: Publish Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
-        # TODO: if any of the build step fails, the release should be deleted.
         with:
             files: 'stalwart-cli*'
         env:
