@@ -7,7 +7,7 @@ set -e
 set -u
 
 readonly CLI_BIN="${HOME}/.stalwart"
-readonly CLI_URL="https://github.com/stalwartlabs/jmap-server-cli/releases/latest/download"
+readonly CLI_URL="https://github.com/stalwartlabs/jmap-server-cli/releases2/latest/download"
 
 main() {
     downloader --check
@@ -385,9 +385,10 @@ downloader() {
             fi
         fi
         if [ -n "$_err" ]; then
-            echo "$_err" >&2
-            if echo "$_err" | grep -q 404$; then
+            if echo "$_err" | grep -q 404; then
                 err "❌  Binary for platform '$3' not found, this platform may be unsupported."
+            else
+                echo "$_err" >&2
             fi
         fi
         return $_status
@@ -415,9 +416,10 @@ downloader() {
             fi
         fi
         if [ -n "$_err" ]; then
-            echo "$_err" >&2
-            if echo "$_err" | grep -q ' 404 Not Found$'; then
+            if echo "$_err" | grep -q ' 404 Not Found'; then
                 err "❌  Binary for platform '$3' not found, this platform may be unsupported."
+            else
+                echo "$_err" >&2
             fi
         fi
         return $_status

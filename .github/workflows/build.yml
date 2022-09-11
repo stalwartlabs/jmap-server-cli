@@ -42,9 +42,6 @@ jobs:
             host_os: ubuntu-20.04
 
     steps:
-      - if: ${{ contains(matrix.host_os, 'ubuntu') }}
-        run: sudo apt-get update -y
-
       - name: Checkout
         uses: actions/checkout@v2
         with:
