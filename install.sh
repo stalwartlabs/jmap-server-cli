@@ -7,7 +7,7 @@ set -e
 set -u
 
 readonly CLI_BIN="${HOME}/.stalwart"
-readonly CLI_URL="https://github.com/stalwartlabs/jmap-server-cli/releases2/latest/download"
+readonly CLI_URL="https://github.com/stalwartlabs/jmap-server-cli/releases/latest/download"
 
 main() {
     downloader --check
