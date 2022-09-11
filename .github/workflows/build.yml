@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     name: Building for ${{ matrix.target }} on ${{ matrix.host_os }}
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ${{ matrix.host_os }}
     strategy: 
       matrix:
