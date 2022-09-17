@@ -203,7 +203,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
                 }
 
                 if email.is_none() || secret.is_none() || name.is_none() {
-                    println!(
+                    eprintln!(
                         "Warnining: skipping record {} due to missing fields.",
                         pos + 1
                     );
@@ -239,7 +239,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
             let mut total_created = 0;
             for (pos, create_id) in account_create_ids.into_iter().enumerate() {
                 if let Err(err) = set_response.created(&create_id) {
-                    println!(
+                    eprintln!(
                         "Warning: Failed to create account '{}': {}",
                         accounts[pos], err
                     );
@@ -257,7 +257,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
 
                 for (pos, create_id) in domain_create_ids.into_iter().enumerate() {
                     if let Err(err) = set_response.created(&create_id) {
-                        println!(
+                        eprintln!(
                             "Warning: Failed to create domain '{}', {}",
                             domains[pos], err
                         );
@@ -265,7 +265,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
                 }
             }
 
-            println!(
+            eprintln!(
                 "\nSuccessfully imported {} accounts.",
                 style(total_created).bold()
             );
@@ -282,7 +282,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
             let mut create_mailbox_names = Vec::new();
             let mut create_mailbox_ids = Vec::new();
 
-            println!("{} Parsing mailbox...", style("[1/4]").bold().dim(),);
+            eprintln!("{} Parsing mailbox...", style("[1/4]").bold().dim(),);
 
             match format {
                 MailboxFormat::Mbox => {
@@ -326,7 +326,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
             }
 
             // Fetch all mailboxes for the account
-            println!(
+            eprintln!(
                 "{} Fetching existing mailboxes for account...",
                 style("[2/4]").bold().dim(),
             );
@@ -365,7 +365,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
             let mut mailbox_names = HashMap::with_capacity(mailbox_ids.len());
 
             // Build mailbox hierarchy on the server
-            println!(
+            eprintln!(
                 "{} Creating missing mailboxes...",
                 style("[3/4]").bold().dim(),
             );
@@ -454,7 +454,7 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
             }
 
             // Import messages
-            println!("{} Importing messages...", style("[4/4]").bold().dim(),);
+            eprintln!("{} Importing messages...", style("[4/4]").bold().dim(),);
 
             let client = Arc::new(client);
             let num_threads = num_threads.unwrap_or_else(num_cpus::get);
@@ -596,15 +596,15 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
                 pb.finish_with_message("Done");
             }
             let failures = failures.lock().unwrap();
-            println!(
+            eprintln!(
                 "\n\nSuccessfully imported {} messages.\n",
                 total_imported.load(Ordering::Relaxed)
             );
 
             if !failures.is_empty() {
-                println!("There were {} failures:\n", failures.len());
+                eprintln!("There were {} failures:\n", failures.len());
                 for failure in failures.iter() {
-                    println!("{}", failure);
+                    eprintln!("{}", failure);
                 }
             }
         }

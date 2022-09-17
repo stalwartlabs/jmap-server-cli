@@ -53,7 +53,7 @@ pub fn cmd_list(client: Client, command: ListCommands) {
                 .unwrap_result("create list")
                 .created(&create_id)
                 .unwrap_result("create list");
-            println!("List '{}' successfully created.", email);
+            eprintln!("List '{}' successfully created.", email);
         }
         ListCommands::Update {
             email,
@@ -76,7 +76,7 @@ pub fn cmd_list(client: Client, command: ListCommands) {
                 .unwrap_result("update list")
                 .updated(&update_id)
                 .unwrap_result("update list");
-            println!("List '{}' successfully updated.", email);
+            eprintln!("List '{}' successfully updated.", email);
         }
         ListCommands::AddMembers { email, members } => {
             let update_id = email_to_id(&client, Type::List, &email);
@@ -93,7 +93,7 @@ pub fn cmd_list(client: Client, command: ListCommands) {
                 .updated(&update_id)
                 .unwrap_result("update list");
 
-            println!("List '{}' successfully updated.", email);
+            eprintln!("List '{}' successfully updated.", email);
         }
         ListCommands::RemoveMembers { email, members } => {
             let update_id = email_to_id(&client, Type::List, &email);
@@ -110,7 +110,7 @@ pub fn cmd_list(client: Client, command: ListCommands) {
                 .updated(&update_id)
                 .unwrap_result("update list");
 
-            println!("List '{}' successfully updated.", email);
+            eprintln!("List '{}' successfully updated.", email);
         }
         ListCommands::List { filter } => {
             list_principals(

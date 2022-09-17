@@ -23,8 +23,8 @@
 
 use jmap_client::{
     client::Client,
-    core::set::SetObject,
-    principal::{Property, Type},
+    core::{query::Filter, set::SetObject},
+    principal::{query, Property, Type},
 };
 
 use crate::modules::{common::email_to_id, UnwrapResult};
@@ -45,6 +45,32 @@ pub fn cmd_account(client: Client, command: AccountCommands) {
             timezone,
             email_aliases,
         } => {
+            // Create the domain if missing
+            if let Some((_, domain)) = email.rsplit_once('@') {
+                let domain_ = domain.to_ascii_lowercase();
+                if client
+                    .principal_query(
+                        Filter::and([
+                            query::Filter::ptype(Type::Domain),
+                            query::Filter::domain_name(domain_),
+                        ])
+                        .into(),
+                        None::<Vec<_>>,
+                    )
+                    .unwrap_result("query principals")
+                    .ids()
+                    .is_empty()
+                {
+                    // Create domain
+                    client
+                        .domain_create(domain)
+                        .unwrap_result(&format!("Failed to create domain '{}'", domain));
+                }
+            } else {
+                eprintln!("Invalid email address '{}'", email);
+                std::process::exit(1);
+            }
+
             let mut request = client.build();
             let create_request = request.set_principal().create();
             create_request
@@ -70,7 +96,7 @@ pub fn cmd_account(client: Client, command: AccountCommands) {
                 .unwrap_result("create account")
                 .created(&create_id)
                 .unwrap_result("create account");
-            println!("Account '{}' successfully created.", email);
+            eprintln!("Account '{}' successfully created.", email);
         }
         AccountCommands::Update {
             email,
@@ -107,13 +133,13 @@ pub fn cmd_account(client: Client, command: AccountCommands) {
                 .unwrap_result("update account")
                 .updated(&update_id)
                 .unwrap_result("update account");
-            println!("Account '{}' successfully updated.", email);
+            eprintln!("Account '{}' successfully updated.", email);
         }
         AccountCommands::Delete { email } => {
             client
                 .principal_destroy(&email_to_id(&client, Type::Individual, &email))
                 .unwrap_result("delete account");
-            println!("Account '{}' successfully deleted.", email);
+            eprintln!("Account '{}' successfully deleted.", email);
         }
         AccountCommands::List { filter } => {
             list_principals(
@@ -156,7 +182,7 @@ pub fn cmd_account(client: Client, command: AccountCommands) {
                 .unwrap_result("update account")
                 .updated(&update_id)
                 .unwrap_result("update account");
-            println!("Account '{}' successfully updated.", email);
+            eprintln!("Account '{}' successfully updated.", email);
         }
         AccountCommands::RemoveAlias { email, aliases } => {
             let update_id = email_to_id(&client, Type::Individual, &email);
@@ -172,7 +198,7 @@ pub fn cmd_account(client: Client, command: AccountCommands) {
                 .unwrap_result("update account")
                 .updated(&update_id)
                 .unwrap_result("update account");
-            println!("Account '{}' successfully updated.", email);
+            eprintln!("Account '{}' successfully updated.", email);
         }
     }
 }

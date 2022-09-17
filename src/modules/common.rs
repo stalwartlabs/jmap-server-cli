@@ -45,11 +45,11 @@ pub fn email_to_id(client: &Client, ptype: Type, email: &str) -> String {
     match response.ids().len() {
         1 => response.take_ids().pop().unwrap(),
         0 => {
-            println!("Error: No principal found with email '{}'.", email);
+            eprintln!("Error: No principal found with email '{}'.", email);
             std::process::exit(1);
         }
         _ => {
-            println!("Error: Multiple principals found with email '{}'.", email);
+            eprintln!("Error: Multiple principals found with email '{}'.", email);
             std::process::exit(1);
         }
     }
@@ -86,7 +86,7 @@ pub fn list_principals(
         .unwrap_method_responses()
         .pop()
         .unwrap_or_else(|| {
-            println!("Error: Received an empty response from server.");
+            eprintln!("Error: Received an empty response from server.");
             std::process::exit(1);
         })
         .unwrap_get_principal()
@@ -107,11 +107,11 @@ pub fn list_principals(
             table.add_row(Row::new(build_cells(client, principal, properties)));
         }
 
-        println!();
+        eprintln!();
         table.printstd();
     }
 
-    println!(
+    eprintln!(
         "\n\n{} record{} found.\n",
         results.len(),
         if results.len() == 1 { "" } else { "s" }
@@ -123,7 +123,7 @@ pub fn display_principal(client: &Client, id: &str, properties: &[Property]) {
         .principal_get(id, properties.iter().cloned().into())
         .unwrap_result("fetch principal")
     {
-        println!();
+        eprintln!();
         let mut table = Table::new();
         for (property, value) in properties
             .iter()
@@ -135,9 +135,9 @@ pub fn display_principal(client: &Client, id: &str, properties: &[Property]) {
             ]));
         }
         table.printstd();
-        println!();
+        eprintln!();
     } else {
-        println!("Entry not found.");
+        eprintln!("Entry not found.");
         std::process::exit(0);
     }
 }

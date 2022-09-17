@@ -65,7 +65,7 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
                 .unwrap_result("create domain")
                 .created(&create_id)
                 .unwrap_result("create domain");
-            println!("Domain '{}' successfully created.", name);
+            eprintln!("Domain '{}' successfully created.", name);
         }
         DomainCommands::Update {
             name,
@@ -93,13 +93,13 @@ pub fn cmd_domain(client: Client, command: DomainCommands) {
                 .unwrap_result("update domain")
                 .updated(&update_id)
                 .unwrap_result("update domain");
-            println!("Domain '{}' successfully updated.", name);
+            eprintln!("Domain '{}' successfully updated.", name);
         }
         DomainCommands::Delete { name } => {
             client
                 .principal_destroy(&domain_to_id(&client, &name))
                 .unwrap_result("delete Domain");
-            println!("Domain '{}' successfully deleted.", name);
+            eprintln!("Domain '{}' successfully deleted.", name);
         }
         DomainCommands::Display { name } => {
             display_principal(
@@ -133,11 +133,11 @@ pub fn domain_to_id(client: &Client, name: &str) -> String {
     match response.ids().len() {
         1 => response.take_ids().pop().unwrap(),
         0 => {
-            println!("Error: No domain found with name '{}'.", name);
+            eprintln!("Error: No domain found with name '{}'.", name);
             std::process::exit(1);
         }
         _ => {
-            println!("Error: Multiple domains found with name '{}'.", name);
+            eprintln!("Error: Multiple domains found with name '{}'.", name);
             std::process::exit(1);
         }
     }

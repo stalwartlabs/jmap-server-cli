@@ -63,7 +63,7 @@ fn main() {
         .credentials(credentials)
         .connect(&args.url)
         .unwrap_or_else(|err| {
-            println!("Failed to connect to JMAP server {}: {}.", args.url, err);
+            eprintln!("Failed to connect to JMAP server {}: {}.", args.url, err);
             std::process::exit(1);
         });
 
@@ -112,7 +112,7 @@ fn oauth(url: &str) -> Credentials {
     if let Some(serde_json::Value::String(access_token)) = response.remove("access_token") {
         Credentials::Bearer(access_token)
     } else {
-        println!(
+        eprintln!(
             "OAuth failed with code {}.",
             response
                 .get("error")

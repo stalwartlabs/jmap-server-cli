@@ -53,7 +53,7 @@ pub fn cmd_group(client: Client, command: GroupCommands) {
                 .unwrap_result("create group")
                 .created(&create_id)
                 .unwrap_result("create group");
-            println!("Group '{}' successfully created.", email);
+            eprintln!("Group '{}' successfully created.", email);
         }
         GroupCommands::Update {
             email,
@@ -76,7 +76,7 @@ pub fn cmd_group(client: Client, command: GroupCommands) {
                 .unwrap_result("update group")
                 .updated(&update_id)
                 .unwrap_result("update group");
-            println!("Group '{}' successfully updated.", email);
+            eprintln!("Group '{}' successfully updated.", email);
         }
         GroupCommands::AddMembers { email, members } => {
             let update_id = email_to_id(&client, Type::Group, &email);
@@ -93,7 +93,7 @@ pub fn cmd_group(client: Client, command: GroupCommands) {
                 .updated(&update_id)
                 .unwrap_result("update group");
 
-            println!("Group '{}' successfully updated.", email);
+            eprintln!("Group '{}' successfully updated.", email);
         }
         GroupCommands::RemoveMembers { email, members } => {
             let update_id = email_to_id(&client, Type::Group, &email);
@@ -110,7 +110,7 @@ pub fn cmd_group(client: Client, command: GroupCommands) {
                 .updated(&update_id)
                 .unwrap_result("update group");
 
-            println!("Group '{}' successfully updated.", email);
+            eprintln!("Group '{}' successfully updated.", email);
         }
         GroupCommands::List { filter } => {
             list_principals(

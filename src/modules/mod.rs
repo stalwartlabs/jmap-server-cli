@@ -42,7 +42,7 @@ impl<T> UnwrapResult<T> for Option<T> {
         match self {
             Some(result) => result,
             None => {
-                println!("Failed to {}", message);
+                eprintln!("Failed to {}", message);
                 std::process::exit(1);
             }
         }
@@ -54,7 +54,7 @@ impl<T, E: Display> UnwrapResult<T> for Result<T, E> {
         match self {
             Ok(result) => result,
             Err(err) => {
-                println!("Failed to {}: {}", message, err);
+                eprintln!("Failed to {}: {}", message, err);
                 std::process::exit(1);
             }
         }
@@ -101,7 +101,7 @@ pub fn read_file(path: &str) -> Vec<u8> {
         raw_message
     } else {
         std::fs::read(path).unwrap_or_else(|_| {
-            println!("Failed to read file: {}", path);
+            eprintln!("Failed to read file: {}", path);
             std::process::exit(1);
         })
     }
