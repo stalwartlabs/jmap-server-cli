@@ -73,6 +73,22 @@ struct Message {
     contents: Vec<u8>,
 }
 
+pub fn repeat<F, T>(task: F, retry: usize) -> jmap_client::Result<T>
+where
+    F: Fn() -> jmap_client::Result<T>,
+{
+    match task() {
+        Ok(res) => Ok(res),
+        Err(e) => {
+            if retry > 0 {
+                repeat(task, retry - 1)
+            } else {
+                Err(e)
+            }
+        }
+    }
+}
+
 pub fn cmd_import(client: Client, command: ImportCommands) {
     match command {
         ImportCommands::Accounts {
@@ -547,31 +563,40 @@ pub fn cmd_import(client: Client, command: ImportCommands) {
                                     pbs.1 += 1;
                                 }
 
-                                if let Err(err) = client.email_import_account(
-                                    &account_id,
-                                    message.contents,
-                                    [mailbox_id.as_ref()],
-                                    if !message.flags.is_empty() {
-                                        message
-                                            .flags
-                                            .into_iter()
-                                            .map(|f| match f {
-                                                maildir::Flag::Passed => "$passed",
-                                                maildir::Flag::Replied => "$answered",
-                                                maildir::Flag::Seen => "$seen",
-                                                maildir::Flag::Trashed => "$deleted",
-                                                maildir::Flag::Draft => "$draft",
-                                                maildir::Flag::Flagged => "$flagged",
-                                            })
-                                            .into()
-                                    } else {
-                                        None
+                                let flags = if !message.flags.is_empty() {
+                                    message
+                                        .flags
+                                        .into_iter()
+                                        .map(|f| match f {
+                                            maildir::Flag::Passed => "$passed",
+                                            maildir::Flag::Replied => "$answered",
+                                            maildir::Flag::Seen => "$seen",
+                                            maildir::Flag::Trashed => "$deleted",
+                                            maildir::Flag::Draft => "$draft",
+                                            maildir::Flag::Flagged => "$flagged",
+                                        })
+                                        .into()
+                                } else {
+                                    None
+                                };
+
+                                let internal_date = if message.internal_date > 0 {
+                                    (message.internal_date as i64).into()
+                                } else {
+                                    None
+                                };
+
+                                if let Err(err) = repeat(
+                                    || {
+                                        client.email_import_account(
+                                            &account_id,
+                                            message.contents.clone(),
+                                            [mailbox_id.as_ref()],
+                                            flags,
+                                            internal_date,
+                                        )
                                     },
-                                    if message.internal_date > 0 {
-                                        (message.internal_date as i64).into()
-                                    } else {
-                                        None
-                                    },
+                                    3,
                                 ) {
                                     failures.lock().unwrap().push(format!(
                                         concat!(
